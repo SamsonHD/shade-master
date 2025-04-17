@@ -16,6 +16,8 @@ export default function Home() {
     numShades: 25,
     selectedShade: null,
     showContrast: false,
+    hue: 200,
+    saturationMod: 70,
   });
 
   const generateShades = useCallback((color: string, count: number) => {
