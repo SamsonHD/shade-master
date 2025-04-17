@@ -131,7 +131,7 @@ export default function Home() {
                   onClick={() => setActiveTab('basic')}
                   className={`px-6 py-3 text-sm font-medium ${
                     activeTab === 'basic'
-                      ? 'border-b-2 border-purple-500 text-purple-600'
+                      ? 'border-b-2 border-blue-500 text-blue-600'
                       : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -141,7 +141,7 @@ export default function Home() {
                   onClick={() => setActiveTab('tinted')}
                   className={`px-6 py-3 text-sm font-medium ${
                     activeTab === 'tinted'
-                      ? 'border-b-2 border-purple-500 text-purple-600'
+                      ? 'border-b-2 border-blue-500 text-blue-600'
                       : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -155,39 +155,91 @@ export default function Home() {
                 {activeTab === 'basic' ? (
                   // Basic Colors Content
                   <>
-                    <div>
-                      <label className="block text-lg font-semibold text-gray-900 mb-2">
+                    <div className="max-w-3xl mx-auto">
+                      <label className="block text-lg font-semibold text-gray-900 mb-4">
                         Enter Color
                       </label>
-                      <div className="flex flex-col sm:flex-row gap-4 items-start">
-                        <div className="flex-grow w-full sm:w-auto">
-                          <input
-                            type="text"
-                            value={baseColor}
-                            onChange={handleColorChange}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 bg-white"
-                            placeholder="Enter color value"
-                          />
-                          <p className="text-gray-700 text-sm mt-2 font-medium">
-                            Example: #808080 or rgb(128, 128, 128) or gray
-                          </p>
-                        </div>
-                        <div className="flex gap-4 w-full sm:w-auto">
-                          <button
-                            onClick={getRandomColor}
-                            className="flex-1 sm:flex-none px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-900 font-medium rounded-lg transition-colors"
-                          >
-                            Get Random Color
-                          </button>
-                          <div className="w-20 h-20 rounded-lg border border-gray-300 cursor-pointer overflow-hidden shrink-0">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 max-w-md">
+                          <div className="relative">
                             <input
-                              type="color"
+                              type="text"
                               value={baseColor}
                               onChange={handleColorChange}
-                              className="w-full h-full cursor-pointer"
-                              aria-label="Color picker"
+                              className="w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                              placeholder="Enter color value"
                             />
+                            <p className="absolute -bottom-6 left-0 text-gray-600 text-sm">
+                              Example: #808080 or rgb(128, 128, 128) or gray
+                            </p>
                           </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="group relative">
+                            <div className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer overflow-hidden shadow-sm hover:border-blue-400 transition-all transform hover:scale-105">
+                              <input
+                                type="color"
+                                value={baseColor}
+                                onChange={handleColorChange}
+                                className="w-full h-full cursor-pointer opacity-0 absolute inset-0"
+                                aria-label="Color picker"
+                              />
+                              <div 
+                                className="w-full h-full"
+                                style={{ backgroundColor: baseColor }}
+                              />
+                            </div>
+                            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="bg-gray-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap">
+                                Pick color
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={getRandomColor}
+                            className="h-12 px-5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all transform hover:scale-105 hover:shadow-md flex items-center justify-center gap-2"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                            </svg>
+                            Random
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Controls Section */}
+                    <div className="max-w-3xl mx-auto">
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={showContrast}
+                              onChange={(e) => setShowContrast(e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span className="ms-3 text-sm font-medium text-gray-700">
+                              Show Contrast
+                            </span>
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm font-medium text-gray-700">Shades:</span>
+                          <input
+                            type="range"
+                            min="5"
+                            max="50"
+                            step="1"
+                            value={numShades}
+                            onChange={(e) => setNumShades(parseInt(e.target.value))}
+                            className="w-48"
+                            aria-label="Number of shades"
+                          />
+                          <span className="text-2xl font-semibold text-gray-900 w-8 text-right">
+                            {numShades}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -232,39 +284,6 @@ export default function Home() {
                     </div>
                   </>
                 )}
-
-                {/* Common Controls */}
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-4">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={showContrast}
-                        onChange={(e) => setShowContrast(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                      <span className="ms-3 text-sm font-medium text-gray-700">
-                        Show Contrast
-                      </span>
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="range"
-                      min="5"
-                      max="50"
-                      step="1"
-                      value={numShades}
-                      onChange={(e) => setNumShades(parseInt(e.target.value))}
-                      className="w-48"
-                      aria-label="Number of shades"
-                    />
-                    <span className="text-2xl font-semibold text-gray-900 w-8 text-right">
-                      {numShades}
-                    </span>
-                  </div>
-                </div>
 
                 {/* Color Shades Display */}
                 <div>
