@@ -104,7 +104,7 @@ export default function Home() {
               Color Shade Generator
             </h1>
             <a
-              href="https://github.com/yourusername/color-shades"
+              href="https://github.com/SamsonHD/shade-master"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-600 hover:text-gray-900 transition-colors"
