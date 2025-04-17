@@ -14,8 +14,7 @@ export const ColorInfo: React.FC<ColorInfoProps> = ({ selectedShade }) => {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      // You might want to add a toast notification here
-    } catch (error) {
+    } catch {
       console.error('Failed to copy to clipboard');
     }
   };

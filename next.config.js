@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: '/shade-master',
+  basePath: process.env.NODE_ENV === 'production' ? '/shade-master' : '',
   images: {
     unoptimized: true,
   },

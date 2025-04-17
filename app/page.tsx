@@ -12,8 +12,6 @@ export default function Home() {
   const [numShades, setNumShades] = useState(25);
   const [selectedShade, setSelectedShade] = useState<string | null>(null);
   const [showContrast, setShowContrast] = useState(false);
-  const [normalizeShades, setNormalizeShades] = useState(false);
-  const [useTintedNeutrals, setUseTintedNeutrals] = useState(false);
   const [hue, setHue] = useState(200);
   const [saturationMod, setSaturationMod] = useState(70);
 
@@ -67,7 +65,7 @@ export default function Home() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-    } catch (error) {
+    } catch {
       console.error('Failed to copy to clipboard');
     }
   };
@@ -288,4 +286,99 @@ export default function Home() {
                   <div className="h-20 w-full flex mb-4 rounded-xl overflow-hidden shadow-sm">
                     {shades.map((shade, index) => (
                       <div
-                        key={`${shade}-${index}`
+                        key={`${shade}-${index}`}
+                        onClick={() => setSelectedShade(shade)}
+                        className="flex-1 h-full cursor-pointer transition-transform hover:transform hover:scale-y-110 relative group"
+                        style={{ backgroundColor: shade }}
+                        role="button"
+                        aria-label={`Color shade ${shade}`}
+                      >
+                        {showContrast && (
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-1 text-[10px] font-medium">
+                            <div style={{ color: 'white' }}>
+                              White {chroma.contrast(shade, 'white').toFixed(2)}
+                            </div>
+                            <div style={{ color: 'black' }}>
+                              Black {chroma.contrast(shade, 'black').toFixed(2)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-center text-gray-700 font-medium mb-6">
+                    {showContrast 
+                      ? "Hover over shades to see contrast ratios for white and black text" 
+                      : "Select the color shade above to get color values below"}
+                  </p>
+
+                  {selectedShade && (
+                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          {Object.entries(getColorFormats(selectedShade) || {}).map(([format, value]) => (
+                            <div key={format} className="flex items-center gap-4">
+                              <span className="uppercase font-semibold text-gray-700 w-12">
+                                {format}
+                              </span>
+                              <button
+                                onClick={() => copyToClipboard(value)}
+                                className="flex-1 text-left px-4 py-2 bg-white rounded border border-gray-300 text-gray-900 hover:border-blue-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 font-mono"
+                              >
+                                {value}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <div
+                          onClick={() => copyToClipboard(selectedShade)}
+                          className="rounded-xl shadow-sm h-full min-h-[200px] relative group cursor-pointer overflow-hidden"
+                          style={{ backgroundColor: selectedShade }}
+                        >
+                          {/* Contrast Information */}
+                          <div className="absolute inset-0 flex flex-col justify-between p-4">
+                            <div className="flex justify-between items-start w-full">
+                              <div 
+                                className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 text-sm font-medium"
+                                style={{ color: getBestTextColor(selectedShade) }}
+                              >
+                                Click to copy HEX
+                              </div>
+                              <div className="space-y-2">
+                                <div 
+                                  className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-2"
+                                  style={{ color: 'white' }}
+                                >
+                                  <span className="w-3 h-3 rounded-full bg-white" />
+                                  {getContrastRatio(selectedShade, 'white')}
+                                </div>
+                                <div 
+                                  className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-2"
+                                  style={{ color: 'black' }}
+                                >
+                                  <span className="w-3 h-3 rounded-full bg-black" />
+                                  {getContrastRatio(selectedShade, 'black')}
+                                </div>
+                              </div>
+                            </div>
+                            <div 
+                              className="text-center text-2xl font-bold tracking-wider opacity-0 group-hover:opacity-100 transition-opacity"
+                              style={{ color: getBestTextColor(selectedShade) }}
+                            >
+                              {selectedShade.toUpperCase()}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

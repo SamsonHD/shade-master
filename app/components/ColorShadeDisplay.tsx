@@ -1,16 +1,16 @@
-import React from 'react';
-import { getContrastRatio, getBestTextColor } from '../utils/colorUtils';
+import { FC } from 'react';
+import { getContrastRatio } from '../utils/colorUtils';
 
 interface ColorShadeDisplayProps {
   shades: string[];
   showContrast: boolean;
-  onShadeSelect: (shade: string) => void;
+  onShadeClick: (shade: string) => void;
 }
 
-export const ColorShadeDisplay: React.FC<ColorShadeDisplayProps> = ({
+export const ColorShadeDisplay: FC<ColorShadeDisplayProps> = ({
   shades,
   showContrast,
-  onShadeSelect,
+  onShadeClick,
 }) => {
   return (
     <div className="space-y-4">
@@ -18,7 +18,7 @@ export const ColorShadeDisplay: React.FC<ColorShadeDisplayProps> = ({
         {shades.map((shade, index) => (
           <div
             key={`${shade}-${index}`}
-            onClick={() => onShadeSelect(shade)}
+            onClick={() => onShadeClick(shade)}
             className="flex-1 h-full cursor-pointer transition-transform hover:transform hover:scale-y-110 relative group"
             style={{ backgroundColor: shade }}
             role="button"
