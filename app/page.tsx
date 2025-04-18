@@ -51,7 +51,6 @@ export default function Home() {
           // Original scale with adjustable lightness
           const baseLightness = chroma(color).get('hsl.l');
           const totalRange = lightnessIncrement * 2; // Total range in both directions
-          const stepSize = totalRange / (count - 1); // Divide by number of steps
           
           const startColor = chroma(color).set('hsl.l', Math.min(1, baseLightness + (totalRange/2)));
           const endColor = chroma(color).set('hsl.l', Math.max(0, baseLightness - (totalRange/2)));
