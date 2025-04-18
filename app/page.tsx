@@ -12,6 +12,8 @@ export default function Home() {
   const [numShades, setNumShades] = useState(25);
   const [selectedShade, setSelectedShade] = useState<string | null>(null);
   const [showContrast, setShowContrast] = useState(false);
+  const [normalizeShades, setNormalizeShades] = useState(false);
+  const [lightnessIncrement, setLightnessIncrement] = useState(0.5);
   const [hue, setHue] = useState(200);
   const [saturationMod, setSaturationMod] = useState(70);
 
@@ -28,7 +30,34 @@ export default function Home() {
     try {
       if (activeTab === 'basic') {
         // Basic color shades
-        const scale = chroma.scale(['#FEFEFE', color, '#010101']).mode('lab');
+        const colorObj = chroma(color);
+        let scale;
+
+        if (normalizeShades) {
+          // Get the base color's luminance
+          const baseLuminance = colorObj.luminance();
+          
+          // Create a normalized scale that ensures visibility across the range
+          if (baseLuminance > 0.5) {
+            // For light colors, ensure we have enough dark shades
+            const darkened = colorObj.darken(1.5);
+            scale = chroma.scale([colorObj.brighten(0.25), color, darkened]).mode('lab');
+          } else {
+            // For dark colors, ensure we have enough light shades
+            const lightened = colorObj.brighten(1.5);
+            scale = chroma.scale([lightened, color, colorObj.darken(0.25)]).mode('lab');
+          }
+        } else {
+          // Original scale with adjustable lightness
+          const baseLightness = chroma(color).get('hsl.l');
+          const totalRange = lightnessIncrement * 2; // Total range in both directions
+          const stepSize = totalRange / (count - 1); // Divide by number of steps
+          
+          const startColor = chroma(color).set('hsl.l', Math.min(1, baseLightness + (totalRange/2)));
+          const endColor = chroma(color).set('hsl.l', Math.max(0, baseLightness - (totalRange/2)));
+          scale = chroma.scale([startColor, color, endColor]).mode('lab');
+        }
+
         const extraShades = scale.colors(count + 2);
         setShades(extraShades.slice(1, -1));
       } else {
@@ -46,7 +75,7 @@ export default function Home() {
     } catch {
       console.error('Invalid color input');
     }
-  }, [activeTab, hue, getSaturation]);
+  }, [activeTab, hue, getSaturation, normalizeShades, lightnessIncrement]);
 
   useEffect(() => {
     generateShades(baseColor, numShades);
@@ -151,91 +180,148 @@ export default function Home() {
                 {activeTab === 'basic' ? (
                   // Basic Colors Content
                   <>
-                    <div className="max-w-3xl mx-auto">
-                      <label className="block text-lg font-semibold text-gray-900 mb-4">
-                        Enter Color
-                      </label>
-                      <div className="flex items-center gap-4">
-                        <div className="flex-1 max-w-md">
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={baseColor}
-                              onChange={handleColorChange}
-                              className="w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-                              placeholder="Enter color value"
-                            />
-                            <p className="absolute -bottom-6 left-0 text-gray-600 text-sm">
-                              Example: #808080 or rgb(128, 128, 128) or gray
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="group relative">
-                            <div className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer overflow-hidden shadow-sm hover:border-blue-400 transition-all transform hover:scale-105">
-                              <input
-                                type="color"
-                                value={baseColor}
-                                onChange={handleColorChange}
-                                className="w-full h-full cursor-pointer opacity-0 absolute inset-0"
-                                aria-label="Color picker"
-                              />
-                              <div 
-                                className="w-full h-full"
-                                style={{ backgroundColor: baseColor }}
-                              />
-                            </div>
-                            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="bg-gray-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap">
-                                Pick color
+                    <div className="space-y-12">
+                      <div>
+                        <label className="block text-lg font-semibold text-gray-900 mb-4">
+                          Color Settings
+                        </label>
+                        <div className="space-y-8">
+                          <div className="flex items-center gap-4">
+                            <div className="flex-1 max-w-md">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={baseColor}
+                                  onChange={handleColorChange}
+                                  className="w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                                  placeholder="Enter color value"
+                                />
+                                <p className="absolute -bottom-6 left-0 text-gray-600 text-sm">
+                                  Example: #808080 or rgb(128, 128, 128) or gray
+                                </p>
                               </div>
                             </div>
+                            <div className="flex items-center gap-3">
+                              <div className="group relative">
+                                <div className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer overflow-hidden shadow-sm hover:border-blue-400 transition-all transform hover:scale-105">
+                                  <input
+                                    type="color"
+                                    value={baseColor}
+                                    onChange={handleColorChange}
+                                    className="w-full h-full cursor-pointer opacity-0 absolute inset-0"
+                                    aria-label="Color picker"
+                                  />
+                                  <div 
+                                    className="w-full h-full"
+                                    style={{ backgroundColor: baseColor }}
+                                  />
+                                </div>
+                                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="bg-gray-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap">
+                                    Pick color
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                onClick={getRandomColor}
+                                className="h-12 px-5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all transform hover:scale-105 hover:shadow-md flex items-center justify-center gap-2"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                </svg>
+                                Random
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            onClick={getRandomColor}
-                            className="h-12 px-5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all transform hover:scale-105 hover:shadow-md flex items-center justify-center gap-2"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                            </svg>
-                            Random
-                          </button>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Controls Section */}
-                    <div className="max-w-3xl mx-auto">
-                      <div className="flex flex-col sm:flex-row justify-between items-center gap-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={showContrast}
-                              onChange={(e) => setShowContrast(e.target.checked)}
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            <span className="ms-3 text-sm font-medium text-gray-700">
-                              Show Contrast
-                            </span>
-                          </label>
+                      {/* Display Settings */}
+                      <div>
+                        <label className="block text-lg font-semibold text-gray-900 mb-4">
+                          Display Settings
+                        </label>
+                        <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+                          <div className="flex items-center gap-4">
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={showContrast}
+                                onChange={(e) => setShowContrast(e.target.checked)}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                              <span className="ms-3 text-sm font-medium text-gray-700">
+                                Show Contrast
+                              </span>
+                            </label>
+                            <label className="relative inline-flex items-center cursor-pointer group">
+                              <input
+                                type="checkbox"
+                                checked={normalizeShades}
+                                onChange={(e) => setNormalizeShades(e.target.checked)}
+                                className="sr-only peer"
+                              />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                              <span className="ms-3 text-sm font-medium text-gray-700">
+                                Normalize Shades
+                              </span>
+                              <div className="absolute top-full left-0 mt-2 w-64 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs py-2 px-3 rounded shadow-lg z-10">
+                                Automatically adjusts the shade range to ensure visibility for very light or dark colors
+                              </div>
+                            </label>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <span className="text-sm font-medium text-gray-700">Shades:</span>
-                          <input
-                            type="range"
-                            min="5"
-                            max="50"
-                            step="1"
-                            value={numShades}
-                            onChange={(e) => setNumShades(parseInt(e.target.value))}
-                            className="w-48"
-                            aria-label="Number of shades"
-                          />
-                          <span className="text-2xl font-semibold text-gray-900 w-8 text-right">
-                            {numShades}
-                          </span>
+                      </div>
+
+                      <div>
+                        <label className="block text-lg font-semibold text-gray-900 mb-4">
+                          Controls
+                        </label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Number of Shades
+                            </label>
+                            <div className="flex items-center gap-4">
+                              <input
+                                type="range"
+                                min="5"
+                                max="50"
+                                step="1"
+                                value={numShades}
+                                onChange={(e) => setNumShades(parseInt(e.target.value))}
+                                className="w-full"
+                                aria-label="Number of shades"
+                              />
+                              <span className="text-2xl font-semibold text-gray-900 w-8 text-right">
+                                {numShades}
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Lightness Increment
+                            </label>
+                            <div className="flex items-center gap-4">
+                              <input
+                                type="range"
+                                min="0.05"
+                                max="0.75"
+                                step="0.05"
+                                value={lightnessIncrement}
+                                onChange={(e) => setLightnessIncrement(parseFloat(e.target.value))}
+                                className="w-full"
+                                aria-label="Lightness increment"
+                              />
+                              <span className="text-2xl font-semibold text-gray-900 w-12 text-right">
+                                {lightnessIncrement.toFixed(2)}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-2">
+                              Adjusts how much the lightness changes between shades
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -275,6 +361,26 @@ export default function Home() {
                               className="w-full"
                             />
                           </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-lg font-semibold text-gray-900 mb-4">
+                          Shades
+                        </label>
+                        <div className="flex items-center gap-4">
+                          <input
+                            type="range"
+                            min="5"
+                            max="50"
+                            step="1"
+                            value={numShades}
+                            onChange={(e) => setNumShades(parseInt(e.target.value))}
+                            className="w-full"
+                            aria-label="Number of shades"
+                          />
+                          <span className="text-2xl font-semibold text-gray-900 w-8 text-right">
+                            {numShades}
+                          </span>
                         </div>
                       </div>
                     </div>
